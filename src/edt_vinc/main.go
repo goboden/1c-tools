@@ -16,7 +16,7 @@ import (
 // -r e:\dev\bhp_test -b dev -f src/Configuration/Configuration.mdo -d 10 -v
 // -r e:\dev\bhp_test -b dev -f pl.txt -d 10 -v
 
-type settings struct {
+type opts struct {
 	repo    string
 	branch  string
 	file    string
@@ -33,7 +33,7 @@ type Configuation struct {
 var verbose bool
 
 func main() {
-	s := &settings{}
+	s := &opts{}
 	s.parse()
 
 	verbose = s.verbose
@@ -45,10 +45,13 @@ func main() {
 
 }
 
-func run(s *settings) error {
+func run(s *opts) error {
 	max, err := getMaxFromGit(s)
 	if verbose {
 		fmt.Println("Maximum version", max)
+	}
+	if err != nil {
+		return err
 	}
 
 	next, err := nextver(max)
@@ -66,7 +69,7 @@ func run(s *settings) error {
 	return nil
 }
 
-func (s *settings) parse() {
+func (s *opts) parse() {
 	flag.StringVar(&s.repo, "r", "", "target repository path")
 	flag.StringVar(&s.branch, "b", "", "target branch")
 	flag.StringVar(&s.file, "f", "", "target file")
@@ -74,74 +77,6 @@ func (s *settings) parse() {
 	flag.BoolVar(&s.verbose, "v", false, "verbose")
 	flag.BoolVar(&s.change, "c", false, "change version in file")
 	flag.Parse()
-}
-
-func getMaxFromGit(s *settings) (string, error) {
-	max := "0.0.0.0"
-
-	for i := 0; i < s.depth; i++ {
-		c, err := gitShow(s, i)
-		if err != nil {
-			break
-		}
-
-		ver := versionFromConfig(c)
-
-		if verbose {
-			fmt.Print(s.branch, "~", i, " Compare ", max, " and ", ver, " -> ")
-		}
-		mver, err := maxver(max, ver)
-		if err != nil {
-			if verbose {
-				fmt.Println(err.Error())
-			}
-			continue
-		}
-
-		max = mver
-		if verbose {
-			fmt.Println(mver)
-		}
-	}
-
-	return max, nil
-}
-
-func changeVersion(s *settings, ver string) {
-	p := "."
-	if s.repo != "" {
-		p = s.repo
-	}
-	fpath, _ := filepath.Abs(filepath.Join(p, s.file))
-
-	if verbose {
-		fmt.Println("Changing version in", fpath, "to", ver)
-	}
-
-	writeConfigurationVersion(fpath, ver)
-
-}
-
-func writeConfigurationVersion(filepath string, version string) {
-	input, err := ioutil.ReadFile(filepath)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	lines := strings.Split(string(input), "\n")
-
-	for i, line := range lines {
-		idx := strings.Index(line, "<version>")
-		if idx > -1 {
-			newline := line[:idx] + "<version>" + version + "</version>"
-			lines[i] = newline
-		}
-	}
-	output := strings.Join(lines, "\n")
-	err = ioutil.WriteFile(filepath, []byte(output), 0644)
-	if err != nil {
-		log.Fatalln(err)
-	}
 }
 
 func maxver(ver1 string, ver2 string) (string, error) {
@@ -204,7 +139,75 @@ func numver(ver string) ([4]int, error) {
 	return nver, nil
 }
 
-func gitShow(s *settings, dp int) ([]byte, error) {
+func getMaxFromGit(s *opts) (string, error) {
+	max := "0.0.0.0"
+
+	for i := 0; i < s.depth; i++ {
+		c, err := gitShow(s, i)
+		if err != nil {
+			break
+		}
+
+		ver := versionFromConfig(c)
+
+		if verbose {
+			fmt.Print(s.branch, "~", i, " Compare ", max, " and ", ver, " -> ")
+		}
+		mver, err := maxver(max, ver)
+		if err != nil {
+			if verbose {
+				fmt.Println(err.Error())
+			}
+			continue
+		}
+
+		max = mver
+		if verbose {
+			fmt.Println(mver)
+		}
+	}
+
+	return max, nil
+}
+
+func changeVersion(s *opts, ver string) {
+	p := "."
+	if s.repo != "" {
+		p = s.repo
+	}
+	fpath, _ := filepath.Abs(filepath.Join(p, s.file))
+
+	if verbose {
+		fmt.Println("Changing version in", fpath, "to", ver)
+	}
+
+	writeConfigurationVersion(fpath, ver)
+
+}
+
+func writeConfigurationVersion(filepath string, version string) {
+	input, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	lines := strings.Split(string(input), "\n")
+
+	for i, line := range lines {
+		idx := strings.Index(line, "<version>")
+		if idx > -1 {
+			newline := line[:idx] + "<version>" + version + "</version>"
+			lines[i] = newline
+		}
+	}
+	output := strings.Join(lines, "\n")
+	err = ioutil.WriteFile(filepath, []byte(output), 0644)
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+func gitShow(s *opts, dp int) ([]byte, error) {
 	opts := []string{}
 	if s.repo != "" {
 		opts = append(opts, "-C", s.repo)
