@@ -1,4 +1,4 @@
-module gitlab.helix.ru/terentev.d/git_tools/edt_vinc
+module gitlab.helix.ru/terentev.d/git_tools
 
 go 1.17
 

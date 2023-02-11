@@ -7,10 +7,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"gitlab.helix.ru/terentev.d/git_tools/pkg/gitrun"
 )
 
 // -r e:\dev\bhp_test -b dev -f src/Configuration/Configuration.mdo -d 10 -v
@@ -142,9 +143,13 @@ func numver(ver string) ([4]int, error) {
 func getMaxFromGit(s *opts) (string, error) {
 	max := "0.0.0.0"
 
+	repo := gitrun.NewRepo(s.repo)
+
 	for i := 0; i < s.depth; i++ {
-		c, err := gitShow(s, i)
+		bpath := s.branch + "~" + strconv.Itoa(i) + ":" + s.file
+		c, err := repo.Show(bpath)
 		if err != nil {
+			fmt.Println(err.Error())
 			break
 		}
 
@@ -205,24 +210,6 @@ func writeConfigurationVersion(filepath string, version string) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-}
-
-func gitShow(s *opts, dp int) ([]byte, error) {
-	opts := []string{}
-	if s.repo != "" {
-		opts = append(opts, "-C", s.repo)
-	}
-	bpath := s.branch + "~" + strconv.Itoa(dp) + ":" + s.file
-	opts = append(opts, "show", bpath)
-
-	cmd := exec.Command("git", opts...)
-	out, err := cmd.Output()
-
-	if err != nil {
-		return nil, err
-	}
-
-	return out, nil
 }
 
 func versionFromConfig(c []byte) string {
