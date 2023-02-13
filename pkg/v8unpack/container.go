@@ -9,7 +9,7 @@ import (
 //
 
 const (
-	сontainerHeaderLength = v8address(16)
+	containerHeaderLength = v8address(16)
 )
 
 type fileIndex map[string]v8address
@@ -192,12 +192,12 @@ func ReadRootContainer(reader Reader) *RootContainer {
 
 func readHeader(reader Reader) []byte {
 	headerBegin := v8address(0)
-	header := reader.ReadFragment(headerBegin, сontainerHeaderLength)
+	header := reader.ReadFragment(headerBegin, containerHeaderLength)
 	return header
 }
 
 func readIndex(reader Reader) fileIndex {
-	data := readDocument(reader, сontainerHeaderLength)
+	data := readDocument(reader, containerHeaderLength)
 	index := make(fileIndex, 0)
 
 	length := v8address(len(data))

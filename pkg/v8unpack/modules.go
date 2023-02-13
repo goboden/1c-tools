@@ -25,7 +25,7 @@ func FindModules(container *RootContainer) (map[string]string, error) {
 }
 
 func ObjectModuleText(file *File) (string, error) {
-	if v8address(len(file.Data)) > сontainerHeaderLength {
+	if v8address(len(file.Data)) > containerHeaderLength {
 		con := ReadContainer(NewBytesReader(file.Data))
 		module, err := con.ReadFile("text", false)
 		if err != nil {
