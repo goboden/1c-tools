@@ -6,8 +6,6 @@ import (
 	"log"
 )
 
-//
-
 const (
 	containerHeaderLength = v8address(16)
 )

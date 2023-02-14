@@ -11,8 +11,16 @@ import (
 
 type v8address uint32
 
+type Reader interface {
+	ReadFragment(v8address, v8address) []byte
+}
+
 type FileReader struct {
 	file *os.File
+}
+
+type BytesReader struct {
+	data []byte
 }
 
 func (reader *FileReader) ReadFragment(begin v8address, length v8address) []byte {
@@ -40,17 +48,9 @@ func (reader *FileReader) ReadFragment(begin v8address, length v8address) []byte
 	return buf
 }
 
-type BytesReader struct {
-	data []byte
-}
-
 func (reader *BytesReader) ReadFragment(begin v8address, length v8address) []byte {
 	buf := reader.data[begin : begin+length]
 	return buf
-}
-
-type Reader interface {
-	ReadFragment(v8address, v8address) []byte
 }
 
 func NewFileReader(file *os.File) *FileReader {
