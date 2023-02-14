@@ -17,7 +17,7 @@ func main() {
 	rd := "./repo"
 	fmt.Printf("Repository:  %s\n", rd)
 
-	rep, err := NewRepository(rd)
+	rep, err := v8repo.NewRepository(rd)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -105,15 +105,15 @@ func main() {
 	fdef := deflate(fdd)
 	// fmt.Printf("%s\n", fdef)
 
-	br := v8unpacker.NewBytesReader(fdef)
-	con := v8unpacker.ReadContainer(br)
+	br := v8unpack.NewBytesReader(fdef)
+	con := v8unpack.ReadContainer(br)
 	for name := range con.GetIndex() {
 		println(name)
 	}
 
 }
 
-func DatabaseInfo(db *Database) {
+func DatabaseInfo(db *v8repo.Database) {
 	fmt.Printf("Database:    %s\n", db.Filename)
 	fmt.Printf("Signature:   %s\n", db.Signature)
 	fmt.Printf("Version:     %s\n", db.Version)
