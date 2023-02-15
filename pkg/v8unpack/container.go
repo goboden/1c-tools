@@ -190,7 +190,7 @@ func ReadRootContainer(reader Reader) *RootContainer {
 
 func readHeader(reader Reader) []byte {
 	headerBegin := v8address(0)
-	header := reader.ReadFragment(headerBegin, containerHeaderLength)
+	header, _ := reader.ReadFragment(headerBegin, containerHeaderLength)
 	return header
 }
 
@@ -204,7 +204,7 @@ func readIndex(reader Reader) fileIndex {
 		content := v8address(binary.LittleEndian.Uint32(data[(i + 4):(i + 8)]))
 
 		attrData := readDocument(reader, attributes)
-		filename := convertFilename(attrData[20:])
+		filename := bytesToString(attrData[20:])
 
 		index[filename] = content
 	}

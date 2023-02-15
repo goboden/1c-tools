@@ -41,7 +41,7 @@ func readDocument(reader Reader, begin v8address) []byte {
 }
 
 func readBlock(reader Reader, begin v8address) (*v8blockHeader, []byte) {
-	header := reader.ReadFragment(begin, blockHeaderLength)
+	header, _ := reader.ReadFragment(begin, blockHeaderLength)
 
 	if header[0] != 13 {
 		panic(fmt.Sprintf("! %d", header[0]))
@@ -49,11 +49,11 @@ func readBlock(reader Reader, begin v8address) (*v8blockHeader, []byte) {
 
 	blockHeader := new(v8blockHeader)
 
-	blockHeader.DocumentLength = convertAddress(header[2:10])
-	blockHeader.BlockLength = convertAddress(header[11:19])
-	blockHeader.NextBlock = convertAddress(header[20:28])
+	blockHeader.DocumentLength = bytesToAdr(header[2:10])
+	blockHeader.BlockLength = bytesToAdr(header[11:19])
+	blockHeader.NextBlock = bytesToAdr(header[20:28])
 
-	data := reader.ReadFragment(begin+blockHeaderLength, blockHeader.BlockLength)
+	data, _ := reader.ReadFragment(begin+blockHeaderLength, blockHeader.BlockLength)
 
 	return blockHeader, data
 }
